@@ -107,7 +107,7 @@ if name:
         # Left: Animation
         # -----------------------------
         with col1:
-            st.subheader("💝 For You (Wait until it loads")
+            st.subheader("💝 For You (Wait until it loads)")
 
             components.html(
                 heart_html,
