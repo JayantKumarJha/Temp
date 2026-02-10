@@ -112,7 +112,7 @@ if name:
             components.html(
                 heart_html,
                 height=420,
-                scrolling=False
+                scrolling=True
             )
 
 
