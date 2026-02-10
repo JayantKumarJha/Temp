@@ -56,7 +56,7 @@ def generate_heart_html():
     ax.set_xlim(x.min(), x.max())
     ax.set_ylim(y.min() - 0.5, y.max() + 0.5)
 
-    ax.set_title("Ooi Be By My Side Until... ❤️")
+    ax.set_title("Be By My Side Until...")
     ax.grid(True, alpha=0.3)
 
     line, = ax.plot([], [], color="red", linewidth=2)
@@ -107,7 +107,7 @@ if name:
         # Left: Animation
         # -----------------------------
         with col1:
-            st.subheader("💝 For You")
+            st.subheader("💝 For You (Wait until it loads")
 
             components.html(
                 heart_html,
@@ -138,7 +138,7 @@ if name:
         )
 
         poem = """
-One day you’ll ask what my heart still seeks,  
+One day you’ll ask me what do i want,  
 As if you never knew its silent speaks.  
 Through every storm, through skies so blue,  
 My only answer lives in you.  
