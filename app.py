@@ -126,7 +126,7 @@ if name:
             st.subheader("🎵 Your Song")
 
             # 👉 Replace with your favorite YouTube link
-            youtube_url = "https://www.youtube.com/watch?v=JGwWNGJdvx8"
+            youtube_url = "https://www.youtube.com/watch?v=Q-AhimhBNUo"
 
             st.video(youtube_url)
 
