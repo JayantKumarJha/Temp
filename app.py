@@ -27,7 +27,6 @@ html, body, [data-testid="stAppViewContainer"] {
     color: #ffe0ec !important;
     font-family: 'Lato', sans-serif;
 }
-
 [data-testid="stMain"] {
     background: #10000a !important;
 }
@@ -49,7 +48,6 @@ html, body, [data-testid="stAppViewContainer"] {
     margin: 0.5rem 0 0.25rem;
     text-shadow: 0 0 40px rgba(255, 77, 136, 0.4);
 }
-
 .hero-subtitle {
     font-family: 'Playfair Display', serif;
     font-style: italic;
@@ -96,7 +94,7 @@ html, body, [data-testid="stAppViewContainer"] {
     letter-spacing: 0.04em;
 }
 
-/* ── Success / error alerts ── */
+/* ── Alerts ── */
 [data-testid="stAlert"] {
     border-radius: 12px !important;
     font-family: 'Lato', sans-serif !important;
@@ -112,7 +110,8 @@ html, body, [data-testid="stAppViewContainer"] {
     letter-spacing: 0.02em;
 }
 
-/* ── Heart animation card ── */
+/* ── Heart animation card ──
+   scrolling=True so the matplotlib toolbar (play/pause/etc) is reachable ── */
 .anim-card {
     background: rgba(255,77,136,0.05);
     border: 1px solid rgba(255,77,136,0.2);
@@ -184,18 +183,19 @@ html, body, [data-testid="stAppViewContainer"] {
     overflow: hidden;
 }
 
-/* ── Content above particles ── */
+/* ── Burst canvas — sits on top of everything for 2 s ── */
+#burst-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* ── Content above background particles ── */
 [data-testid="stVerticalBlock"] {
     position: relative;
     z-index: 1;
-}
-
-/* ── Streamlit video overrides ── */
-[data-testid="stVideo"] video,
-[data-testid="stVideo"] iframe {
-    border-radius: 14px !important;
-    width: 100% !important;
-    max-width: 100% !important;
 }
 
 /* ── Mobile padding ── */
@@ -208,14 +208,17 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 /* ── Spinner ── */
-[data-testid="stSpinner"] {
-    color: #ff4d88 !important;
-}
+[data-testid="stSpinner"] { color: #ff4d88 !important; }
 </style>
 
-<!-- Floating petal particles -->
+<!-- ═══ Background petal rain ═══ -->
 <canvas id="petals" class="petals-canvas"></canvas>
+
+<!-- ═══ Burst canvas (roses & hearts) ═══ -->
+<canvas id="burst-canvas"></canvas>
+
 <script>
+/* ─── Background petals ─── */
 (function(){
     const canvas = document.getElementById('petals');
     if (!canvas) return;
@@ -235,27 +238,135 @@ html, body, [data-testid="stAppViewContainer"] {
         this.alpha = 0.3 + Math.random()*0.4;
         this.hue = 340 + Math.random()*20;
     }
-    for(let i=0;i<35;i++) { const p = new Petal(); p.y=Math.random()*H; petals.push(p); }
+    for(let i=0;i<35;i++){ const p=new Petal(); p.y=Math.random()*H; petals.push(p); }
     function draw(){
         ctx.clearRect(0,0,W,H);
         petals.forEach(p=>{
             ctx.save();
-            ctx.translate(p.x, p.y);
+            ctx.translate(p.x,p.y);
             ctx.rotate(p.angle);
-            ctx.globalAlpha = p.alpha;
+            ctx.globalAlpha=p.alpha;
             ctx.beginPath();
             ctx.ellipse(0,0,p.size,p.size*0.55,0,0,Math.PI*2);
-            ctx.fillStyle = `hsl(${p.hue},80%,68%)`;
+            ctx.fillStyle=`hsl(${p.hue},80%,68%)`;
             ctx.fill();
             ctx.restore();
-            p.y += p.speed;
-            p.x += p.drift;
-            p.angle += p.spin;
-            if(p.y > H+20){ p.y=-20; p.x=Math.random()*W; }
+            p.y+=p.speed; p.x+=p.drift; p.angle+=p.spin;
+            if(p.y>H+20){ p.y=-20; p.x=Math.random()*W; }
         });
         requestAnimationFrame(draw);
     }
     draw();
+})();
+
+/* ─── Burst: roses 🌹 & hearts ❤️ fired from screen centre ─── */
+(function(){
+    const bc = document.getElementById('burst-canvas');
+    if (!bc) return;
+    const ctx = bc.getContext('2d');
+    let W, H;
+    function resize(){ W = bc.width = window.innerWidth; H = bc.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const EMOJIS = ['❤️','🌹','💕','🌸','💖','🌹','❤️','💗','🌹','💝'];
+    let particles = [];
+    let running = false;
+    let startTime = null;
+    const DURATION = 2800; // ms total burst
+
+    function Particle(){
+        // launch from a spread along the bottom-centre (like fireworks)
+        this.x = W/2 + (Math.random()-0.5)*W*0.3;
+        this.y = H + 20;
+        const angle = -(Math.PI * (0.25 + Math.random()*0.5)); // upward arc
+        const speed = 6 + Math.random()*10;
+        this.vx = Math.cos(angle)*speed + (Math.random()-0.5)*4;
+        this.vy = Math.sin(angle)*speed;
+        this.gravity = 0.18 + Math.random()*0.12;
+        this.emoji = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+        this.size = 22 + Math.floor(Math.random()*22);
+        this.alpha = 1;
+        this.rotation = (Math.random()-0.5)*0.4;
+        this.spin = (Math.random()-0.5)*0.06;
+        this.born = performance.now();
+        this.life = 1200 + Math.random()*1000; // each particle lives 1.2-2.2 s
+    }
+
+    function spawnBatch(){
+        for(let i=0;i<18;i++) particles.push(new Particle());
+    }
+
+    function draw(ts){
+        if(!running) return;
+        const elapsed = ts - startTime;
+
+        ctx.clearRect(0,0,W,H);
+
+        // spawn a second wave at ~600 ms
+        if(elapsed > 600 && elapsed < 640 && particles.length < 36){
+            spawnBatch();
+        }
+
+        particles = particles.filter(p => {
+            const age = ts - p.born;
+            return age < p.life;
+        });
+
+        particles.forEach(p => {
+            const age = ts - p.born;
+            const progress = age / p.life;
+            p.vx += 0;
+            p.vy += p.gravity;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.rotation += p.spin;
+
+            // fade out last 40%
+            const alpha = progress > 0.6 ? 1 - (progress - 0.6)/0.4 : 1;
+
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rotation);
+            ctx.font = `${p.size}px serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(p.emoji, 0, 0);
+            ctx.restore();
+        });
+
+        if(elapsed < DURATION){
+            requestAnimationFrame(draw);
+        } else {
+            ctx.clearRect(0,0,W,H);
+            running = false;
+        }
+    }
+
+    // expose so Streamlit can trigger it
+    window.triggerBurst = function(){
+        if(running) return;
+        running = true;
+        particles = [];
+        startTime = performance.now();
+        spawnBatch();
+        requestAnimationFrame(draw);
+    };
+
+    // auto-fire if the unlock has already happened (page re-render)
+    // we detect it by checking for the success alert in the DOM
+    function maybeAutoFire(){
+        const alerts = document.querySelectorAll('[data-testid="stAlert"]');
+        for(const a of alerts){
+            if(a.innerText && a.innerText.includes('Love You')){
+                window.triggerBurst();
+                return;
+            }
+        }
+    }
+    // slight delay to let Streamlit paint the DOM
+    setTimeout(maybeAutoFire, 400);
 })();
 </script>
 """, unsafe_allow_html=True)
@@ -278,7 +389,7 @@ allowed_names = [
 ]
 
 # -----------------------------
-# Heart animation (cached)
+# Heart animation — dark-themed, controls preserved
 # -----------------------------
 @st.cache_resource
 def generate_heart_html():
@@ -288,11 +399,11 @@ def generate_heart_html():
     x = np.linspace(-np.sqrt(3), np.sqrt(3), 8000)
     y = heart_equation(x)
 
-    fig, ax = plt.subplots(figsize=(4, 3), facecolor='#10000a')
+    fig, ax = plt.subplots(figsize=(5, 3.6), facecolor='#10000a')
     ax.set_facecolor('#10000a')
     ax.set_xlim(x.min(), x.max())
     ax.set_ylim(y.min() - 0.3, y.max() + 0.3)
-    ax.set_title("Press ▶ to play", color='#c97fa0', fontsize=9, pad=6)
+    ax.set_title("Be By My Side Until…", color='#c97fa0', fontsize=10, pad=8)
     ax.tick_params(colors='#6b2040')
     for spine in ax.spines.values():
         spine.set_edgecolor('#3a0020')
@@ -307,7 +418,8 @@ def generate_heart_html():
         return line,
 
     anim = animation.FuncAnimation(fig, update, frames=frames, interval=15, blit=True)
-    html = anim.to_jshtml()
+    # embed_frames=True keeps the full interactive toolbar (play/pause/slider)
+    html = anim.to_jshtml(embed_frames=True, default_mode='once')
     plt.close()
     return html
 
@@ -318,19 +430,28 @@ if name:
     if name.strip().lower() in allowed_names:
         st.success("💖 Love You My Babbby")
 
+        # Burst fires automatically via JS DOM detection above,
+        # but we also inject a direct call here for immediate trigger
+        components.html("""
+        <script>
+            if(window.parent && window.parent.triggerBurst){
+                window.parent.triggerBurst();
+            }
+        </script>
+        """, height=0)
+
         with st.spinner("Preparing something special… ❤️"):
             heart_html = generate_heart_html()
 
         # ── Heart animation ──
-        st.markdown('<div class="section-heading">💝 For You</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-heading">💝 For You — press ▶ to play</div>', unsafe_allow_html=True)
         st.markdown('<div class="anim-card">', unsafe_allow_html=True)
-        components.html(heart_html, height=340, scrolling=False)
+        # height=420 + scrolling=True ensures the matplotlib toolbar is visible & usable
+        components.html(heart_html, height=420, scrolling=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
         # ── Song ──
         st.markdown('<div class="section-heading">🎵 A Song For My Bundi ka Ladoo</div>', unsafe_allow_html=True)
-
-        # Responsive YouTube embed
         st.markdown("""
         <div class="video-wrapper">
             <iframe
