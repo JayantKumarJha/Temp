@@ -16,7 +16,7 @@ import streamlit.components.v1 as components
 # Page Config
 # -----------------------------
 st.set_page_config(
-    page_title="For Manisha ❤️",
+    page_title="For Priyaaa ❤️",
     layout="wide"
 )
 
@@ -36,7 +36,7 @@ st.markdown("<hr>", unsafe_allow_html=True)
 # -----------------------------
 name = st.text_input("✨ Enter your name:")
 
-allowed_names = ["manisha", "manisha gupta"]
+allowed_names = ["Priya", "Priya Jha", "priya", "priya jha", "Smriti", "Smriti Jha",  "smriti", "smriti jha"]
 
 
 # -----------------------------
@@ -93,7 +93,7 @@ if name:
 
     if name.strip().lower() in allowed_names:
 
-        st.success("Welcome Manisha 💖")
+        st.success("Welcome Priya 💖")
 
         with st.spinner("Preparing something special... ❤️"):
             heart_html = generate_heart_html()
@@ -122,7 +122,7 @@ if name:
         with col2:
             st.subheader("🎵 Your Song")
 
-            youtube_url = "https://www.youtube.com/watch?v=Q-AhimhBNUo"
+            youtube_url = "https://www.youtube.com/watch?v=Jpq9tm0gnTM&list=RDJpq9tm0gnTM&start_radio=1"
             st.video(youtube_url)
 
 
