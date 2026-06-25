@@ -56,7 +56,7 @@ def generate_heart_html():
     ax.set_xlim(x.min(), x.max())
     ax.set_ylim(y.min() - 0.5, y.max() + 0.5)
 
-    ax.set_title("Be By My Side Until...")
+    ax.set_title("Be By My Side Until... (Click the Play Button Below:)")
     ax.grid(True, alpha=0.3)
 
     line, = ax.plot([], [], color="red", linewidth=2)
