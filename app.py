@@ -93,7 +93,7 @@ if name:
 
     if name.strip().lower() in allowed_names:
 
-        st.success("Welcome Priya 💖")
+        st.success(" Love You My Babbby💖")
 
         with st.spinner("Preparing something special... ❤️"):
             heart_html = generate_heart_html()
@@ -120,7 +120,7 @@ if name:
         # Right: YouTube Video
         # -----------------------------
         with col2:
-            st.subheader("🎵 Your Song")
+            st.subheader("🎵 A Song For My Bundi ka Ladoo")
 
             youtube_url = "https://www.youtube.com/watch?v=Jpq9tm0gnTM&list=RDJpq9tm0gnTM&start_radio=1"
             st.video(youtube_url)
